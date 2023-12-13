@@ -49,6 +49,7 @@ public class PacketListener implements Listener {
         // This is an example of how to listen to a packet.
         if (pac instanceof PacketPlayInSteerVehicle) {
             ArmorStand as = (ArmorStand) p.getVehicle();
+            
             if (ArmorStandSpinTask.spinningPlayers.contains(p)) {
                 e.setCancelled(true);
                 return;
@@ -60,7 +61,7 @@ public class PacketListener implements Listener {
             // PacketPlayInSteerVehicle has 4 fields:
             // a() - left/right (-0.98/0.98) | If the player is holding A or D.
             // b() - forward/backward (-0.98/0.98) | If the player is holding W or S.
-            // c() - jump (true/false) | If the player is jumping (trying to jump.
+            // c() - jump (true/false) | If the player is jumping (trying to jump inside the vehicle).
             // d() - dismount (true/false) | If the player is crouching.
             // Example:
             float sides = packet.a(); // left/right (-0.98/0.98)

@@ -124,6 +124,8 @@ public class PacketListener implements Listener {
                 if (sides == 0) {
                     Bukkit.getScheduler().runTaskAsynchronously(PacketTester.getInstance(), new ArmorStandSpinTask(as, p));
                 }
+
+                // This will prevent the packet from being read.
                 e.setCancelled(true);
             }
         }

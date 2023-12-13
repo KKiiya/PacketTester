@@ -41,12 +41,29 @@ public class Injector {
                 // Call the PacketWriteEvent.
                 PacketWriteEvent event = new PacketWriteEvent(player, msg);
                 Bukkit.getPluginManager().callEvent(event);
+                Object finalPacket = getObject(msg, event);
 
                 // If the event is cancelled, the packet won't be written.
                 if (event.isCancelled()) return;
 
                 // Call the original channelWrite.
-                super.write(ctx, event.getPacket(), promise);
+                super.write(ctx, finalPacket, promise);
+            }
+
+            private Object getObject(Object msg, PacketWriteEvent event) {
+                Object finalPacket = event.getPacket();
+
+                // If the packet is not null, set the finalPacket to the packet.
+                if (finalPacket != null) {
+                    // If the packet is not the same type as the original packet, set the finalPacket to the original packet.
+                    if (msg.getClass() != finalPacket.getClass()) {
+                        finalPacket = msg;
+                    }
+                } else {
+                    // If the packet is null, set the finalPacket to the original packet.
+                    finalPacket = msg;
+                }
+                return finalPacket;
             }
         };
         // Add the channel handler to the player's channel pipeline.

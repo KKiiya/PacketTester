@@ -8,6 +8,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.EulerAngle;
 
 // IGNORE THIS CLASS
 public class VehicleSummonCommand implements CommandExecutor {
@@ -31,6 +32,7 @@ public class VehicleSummonCommand implements CommandExecutor {
             as.setCustomName("kart");
             as.setCustomNameVisible(false);
             as.setHelmet(new ItemStack(Material.FURNACE));
+            as.setHeadPose(EulerAngle.ZERO);
 
             as.setPassenger(p);
         } else {
@@ -41,6 +43,7 @@ public class VehicleSummonCommand implements CommandExecutor {
             as.setCustomName("kart");
             as.setCustomNameVisible(false);
             as.setHelmet(new ItemStack(Material.FURNACE));
+            as.setHeadPose(EulerAngle.ZERO);
 
             as.setPassenger(p);
         }

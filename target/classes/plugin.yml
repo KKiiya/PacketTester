@@ -1,0 +1,15 @@
+name: PacketTester
+version: '1.0-SNAPSHOT'
+main: me.kiiya.packettester.PacketTester
+author: Kiiya
+description: PacketTester
+api-version: 1.8
+commands:
+  vehicle:
+    description: Summon an armor stand
+    usage: /<command>
+    aliases: [vh]
+  dismount:
+    description: Dismount from the vehicle
+    usage: /<command>
+    aliases: [dm]

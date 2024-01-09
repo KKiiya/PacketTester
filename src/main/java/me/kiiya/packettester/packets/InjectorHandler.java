@@ -25,7 +25,6 @@ public class InjectorHandler implements Listener {
     private InjectorHandler() {
         this.injectedPlayers = new ArrayList<>();
         this.injections = new ArrayList<>();
-        PacketTester.getInstance().getServer().getPluginManager().registerEvents(instance, PacketTester.getInstance());
     }
 
     // Initialize the singleton instance.
@@ -33,6 +32,7 @@ public class InjectorHandler implements Listener {
         if (instance != null) return;
         instance = new InjectorHandler();
         for (Player p : PacketTester.getInstance().getServer().getOnlinePlayers()) instance.inject(p);
+        PacketTester.getInstance().getServer().getPluginManager().registerEvents(instance, PacketTester.getInstance());
         PacketTester.getInstance().getServer().getPluginManager().registerEvents(new PacketListener(), PacketTester.getInstance());
         PacketTester.getInstance().getLogger().info("Packet handlers registered.");
     }

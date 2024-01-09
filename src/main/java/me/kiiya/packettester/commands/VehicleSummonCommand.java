@@ -1,5 +1,6 @@
 package me.kiiya.packettester.commands;
 
+import me.kiiya.packettester.utils.Utility;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,6 +23,10 @@ public class VehicleSummonCommand implements CommandExecutor {
 
         Player p = (Player) commandSender;
 
+        if (strings.length > 1) {
+            Utility.spawnArmorStand(p);
+            return true;
+        }
         if (p.isInsideVehicle()) {
             p.getVehicle().eject();
 
@@ -32,7 +37,8 @@ public class VehicleSummonCommand implements CommandExecutor {
             as.setCustomName("kart");
             as.setCustomNameVisible(false);
             as.setHelmet(new ItemStack(Material.FURNACE));
-            as.setHeadPose(EulerAngle.ZERO);
+            Utility.log("Head pose: " + as.getHeadPose().getY() + " " + as.getHeadPose().getX() + " " + as.getHeadPose().getZ());
+            Utility.log("Body pose: " + as.getBodyPose().getY() + " " + as.getBodyPose().getX() + " " + as.getBodyPose().getZ());
 
             as.setPassenger(p);
         } else {
@@ -43,7 +49,8 @@ public class VehicleSummonCommand implements CommandExecutor {
             as.setCustomName("kart");
             as.setCustomNameVisible(false);
             as.setHelmet(new ItemStack(Material.FURNACE));
-            as.setHeadPose(EulerAngle.ZERO);
+            Utility.log("Head pose: " + as.getHeadPose().getY() + " " + as.getHeadPose().getX() + " " + as.getHeadPose().getZ());
+            Utility.log("Body pose: " + as.getBodyPose().getY() + " " + as.getBodyPose().getX() + " " + as.getBodyPose().getZ());
 
             as.setPassenger(p);
         }

@@ -70,19 +70,35 @@ public class PacketListener implements Listener {
             boolean unmount = packet.d(); // dismount (true/false)
 
 
-            p.getWorld().spigot().playEffect(as.getLocation().add(1, 0, 0), Effect.FLAME, 0, 0, 0, 0, 0, 0, 1, 1);
-            p.getWorld().spigot().playEffect(as.getLocation().add(0, 0, 1), Effect.HEART, 0, 0, 0, 0, 0, 0, 1, 1);
-            p.getWorld().spigot().playEffect(as.getLocation().subtract(1, 0, 0), Effect.SLIME, 0, 0, 0, 0, 0, 0, 1, 1);
-            p.getWorld().spigot().playEffect(as.getLocation().subtract(1, 0, 1), Effect.CLOUD, 0, 0, 0, 0, 0, 0, 1, 1);
+            p.getWorld().spigot().playEffect(as.getLocation(), Effect.FLAME, 0, 0, 0, 0, 0, 0, 1, 1);
+            p.getWorld().spigot().playEffect(as.getLocation(), Effect.HEART, 0, 0, 0, 0, 0, 0, 1, 1);
+            p.getWorld().spigot().playEffect(as.getLocation(), Effect.SLIME, 0, 0, 0, 0, 0, 0, 1, 1);
+            p.getWorld().spigot().playEffect(as.getLocation(), Effect.CLOUD, 0, 0, 0, 0, 0, 0, 1, 1);
 
             if (sides < 0) {
                 // RIGHT
                 double z = as.getHeadPose().getZ();
-                as.setHeadPose(new EulerAngle(0, as.getHeadPose().getY() + 0.05, -0.5));
+                if (forward == 0) as.setHeadPose(new EulerAngle(Math.sin(as.getHeadPose().getZ()), as.getHeadPose().getY() + 0.05, -0.25));
+                else if (forward > 0) {
+                    as.setHeadPose(new EulerAngle(0, as.getHeadPose().getY() + 0.065, -0.5));
+                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*0.8, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*0.8));
+                }
+                else if (forward < 0) {
+                    as.setHeadPose(new EulerAngle(Math.sin(as.getHeadPose().getZ()), as.getHeadPose().getY() + 0.065, -0.25));
+                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*-0.5, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*-0.5));
+                }
             } else if (sides > 0) {
                 // LEFT
                 double z = as.getHeadPose().getZ();
-                as.setHeadPose(new EulerAngle(0, as.getHeadPose().getY() - 0.05, 0.5));
+                if (forward == 0) as.setHeadPose(new EulerAngle(Math.sin(as.getHeadPose().getZ()), as.getHeadPose().getY() - 0.05, 0.25));
+                else if (forward > 0) {
+                    as.setHeadPose(new EulerAngle(Math.sin(as.getHeadPose().getZ()), as.getHeadPose().getY() - 0.065, 0.25));
+                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*0.8, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*0.8));
+                }
+                else if (forward < 0) {
+                    as.setHeadPose(new EulerAngle(Math.sin(as.getHeadPose().getZ()), as.getHeadPose().getY() - 0.065, 0.25));
+                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*-0.5, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*-0.5));
+                }
             } else {
                 // CENTER
                 /*
@@ -93,21 +109,19 @@ public class PacketListener implements Listener {
                 as.setHeadPose(new EulerAngle(0, as.getHeadPose().getY(), z));
                  */
                 as.setHeadPose(new EulerAngle(0, as.getHeadPose().getY(), 0));
-            }
+                if (forward > 0) {
+                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*1, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*1));
+                } else if (forward < 0) {
+                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*-0.5, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*-0.5));
+                } else {
+                    double y = as.getVelocity().getY();
 
+                    y += 0.0025;
+                    if (as.getVelocity().getY() >= 0.05) y -= 0.05;
+                    else if (as.getVelocity().getY() <= -0.05) y += 0.05;
 
-            if (forward > 0) {
-                as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*1, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*1));
-            } else if (forward < 0) {
-                as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*-0.5, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*-0.5));
-            } else {
-                double y = as.getVelocity().getY();
-
-                y += 0.0025;
-                if (as.getVelocity().getY() >= 0.05) y -= 0.05;
-                else if (as.getVelocity().getY() <= -0.05) y += 0.05;
-
-                as.setVelocity(new Vector(0, y, 0));
+                    as.setVelocity(new Vector(0, y, 0));
+                }
             }
 
             if (forward == 0) p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 0.15F, 0.45F);

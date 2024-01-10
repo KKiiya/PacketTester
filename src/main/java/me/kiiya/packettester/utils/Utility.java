@@ -42,12 +42,15 @@ public class Utility {
         a.setGravity(false);
         a.setBasePlate(false);
         a.setVisible(false);
+        as.locX = loc.getX();
+        as.locY = loc.getY();
+        as.locZ = loc.getZ();
         PacketPlayOutSpawnEntityLiving spawnPacket = new PacketPlayOutSpawnEntityLiving(as);
         PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(as.getId(), as.getDataWatcher(), true);
         PacketPlayOutEntityEquipment equipmentPacket = new PacketPlayOutEntityEquipment(as.getId(), 4, CraftItemStack.asNMSCopy(new ItemStack(Material.DIAMOND_BLOCK)));
         sendPacket(p, spawnPacket);
         sendPacket(p, metadataPacket);
         sendPacket(p, equipmentPacket);
-        Bukkit.getScheduler().runTaskTimer(PacketTester.getInstance(), new CraftArmorRotate(p, as), 0, 1);
+        Bukkit.getScheduler().runTaskTimer(PacketTester.getInstance(), new CraftArmorRotate(p, as, loc), 0, 1);
     }
 }

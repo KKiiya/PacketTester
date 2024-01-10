@@ -12,30 +12,80 @@ public class CraftArmorRotate implements Runnable {
     private Location loc;
     private Location pLoc;
     private boolean up = true;
-    public CraftArmorRotate(Player p, EntityArmorStand as) {
+    public CraftArmorRotate(Player p, EntityArmorStand as, Location loc) {
         this.p = p;
         this.as = as;
-        this.loc = new Location(as.getWorld().getWorld(), as.locX, as.locY, as.locZ);
+        this.loc = loc;
         this.pLoc = p.getLocation();
     }
     @Override
     public void run() {
-        as.yaw += 2.0F;
-        Utility.log("Motion: " + as.motY);
         if (up) {
-            as.motY += 0.1;
-            if (as.motY >= 1.0) {
+            as.motY += 1;
+            switch ((int) as.motY) {
+                case 1:
+                    as.yaw += 1;
+                    break;
+                case 2:
+                    as.yaw += 2;
+                    break;
+                case 3:
+                    as.yaw += 3;
+                    break;
+                case 4:
+                    as.yaw += 4;
+                    break;
+                case 5:
+                    as.yaw += 5;
+                    break;
+                case 6:
+                    as.yaw += 6;
+                    break;
+                case 7:
+                    as.yaw += 7;
+                    break;
+                case 8:
+                    as.yaw += 8;
+                    break;
+            }
+            if (as.motY >= 8.0) {
                 up = false;
             }
         } else {
-            as.motY -= 0.1;
-            if (as.motY <= -1.0) {
+            as.motY -= 1;
+            switch ((int) as.motY) {
+                case 7:
+                    as.yaw -= 1;
+                    break;
+                case 6:
+                    as.yaw -= 2;
+                    break;
+                case 5:
+                    as.yaw -= 3;
+                    break;
+                case 4:
+                    as.yaw -= 4;
+                    break;
+                case 3:
+                    as.yaw -= 5;
+                    break;
+                case 2:
+                    as.yaw -= 6;
+                    break;
+                case 1:
+                    as.yaw -= 7;
+                    break;
+                case 0:
+                    as.yaw -= 8;
+                    break;
+            }
+            if (as.motY <= -8.0) {
                 up = true;
             }
         }
-        PacketPlayOutEntityTeleport teleportPacket = new PacketPlayOutEntityTeleport(as.getId(), (int) as.locX, (int) as.locY, (int) as.locZ, (byte) as.yaw, (byte) as.pitch, false);
+        PacketPlayOutEntityTeleport teleportPacket = new PacketPlayOutEntityTeleport(as.getId(), MathHelper.floor(loc.getX() * 32), MathHelper.floor(loc.getY() * 32), MathHelper.floor(loc.getZ() * 32), (byte) as.yaw, (byte) as.pitch, false);
         PacketPlayOutEntityHeadRotation headRotationPacket = new PacketPlayOutEntityHeadRotation(as, (byte) as.yaw);
-        PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(as.getId(), 0, as.motY, 0);
+        PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) as.motX, (byte) as.motY, (byte) as.motZ, (byte) as.yaw, (byte) as.pitch, false);
         Utility.sendPacket(p, teleportPacket);
         Utility.sendPacket(p, headRotationPacket);
         Utility.sendPacket(p, velocityPacket);

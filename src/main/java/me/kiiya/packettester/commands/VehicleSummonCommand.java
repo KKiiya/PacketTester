@@ -6,10 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.EulerAngle;
 
 // IGNORE THIS CLASS
 public class VehicleSummonCommand implements CommandExecutor {
@@ -30,29 +27,9 @@ public class VehicleSummonCommand implements CommandExecutor {
         if (p.isInsideVehicle()) {
             p.getVehicle().eject();
 
-            ArmorStand as = p.getWorld().spawn(p.getLocation(), ArmorStand.class);
-
-            as.setVisible(false);
-            as.setCanPickupItems(false);
-            as.setCustomName("kart");
-            as.setCustomNameVisible(false);
-            as.setHelmet(new ItemStack(Material.FURNACE));
-            Utility.log("Head pose: " + as.getHeadPose().getY() + " " + as.getHeadPose().getX() + " " + as.getHeadPose().getZ());
-            Utility.log("Body pose: " + as.getBodyPose().getY() + " " + as.getBodyPose().getX() + " " + as.getBodyPose().getZ());
-
-            as.setPassenger(p);
+            Utility.spawnVehicle(p);
         } else {
-            ArmorStand as = p.getWorld().spawn(p.getLocation(), ArmorStand.class);
-
-            as.setVisible(false);
-            as.setCanPickupItems(false);
-            as.setCustomName("kart");
-            as.setCustomNameVisible(false);
-            as.setHelmet(new ItemStack(Material.FURNACE));
-            Utility.log("Head pose: " + as.getHeadPose().getY() + " " + as.getHeadPose().getX() + " " + as.getHeadPose().getZ());
-            Utility.log("Body pose: " + as.getBodyPose().getY() + " " + as.getBodyPose().getX() + " " + as.getBodyPose().getZ());
-
-            as.setPassenger(p);
+            Utility.spawnVehicle(p);
         }
         return true;
     }

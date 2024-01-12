@@ -3,7 +3,6 @@ package me.kiiya.packettester.tasks;
 import me.kiiya.packettester.utils.Utility;
 import net.minecraft.server.v1_8_R3.*;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 public class CraftArmorRotate implements Runnable {
@@ -11,83 +10,69 @@ public class CraftArmorRotate implements Runnable {
     private EntityArmorStand as;
     private Location loc;
     private Location pLoc;
-    private boolean up = true;
+    private boolean up = false;
     public CraftArmorRotate(Player p, EntityArmorStand as, Location loc) {
         this.p = p;
         this.as = as;
+        this.as.yaw = 0;
         this.loc = loc;
         this.pLoc = p.getLocation();
     }
     @Override
     public void run() {
         if (up) {
-            as.motY += 1;
-            switch ((int) as.motY) {
-                case 1:
-                    as.yaw += 1;
-                    break;
-                case 2:
-                    as.yaw += 2;
-                    break;
-                case 3:
-                    as.yaw += 3;
-                    break;
-                case 4:
-                    as.yaw += 4;
-                    break;
-                case 5:
-                    as.yaw += 5;
-                    break;
-                case 6:
-                    as.yaw += 6;
-                    break;
-                case 7:
-                    as.yaw += 7;
-                    break;
-                case 8:
-                    as.yaw += 8;
-                    break;
-            }
-            if (as.motY >= 8.0) {
+            if (as.yaw >= 270) {
                 up = false;
             }
-        } else {
-            as.motY -= 1;
-            switch ((int) as.motY) {
-                case 7:
-                    as.yaw -= 1;
-                    break;
-                case 6:
-                    as.yaw -= 2;
-                    break;
-                case 5:
-                    as.yaw -= 3;
-                    break;
-                case 4:
-                    as.yaw -= 4;
-                    break;
-                case 3:
-                    as.yaw -= 5;
-                    break;
-                case 2:
-                    as.yaw -= 6;
-                    break;
-                case 1:
-                    as.yaw -= 7;
-                    break;
-                case 0:
-                    as.yaw -= 8;
-                    break;
+
+            if (as.yaw > 260) {
+                as.motY += 0.6;
+                as.yaw += 2;
+            } else if (as.yaw > 200) {
+                as.motY += 0.5;
+                as.yaw += 3;
+            } else if (as.yaw > 160) {
+                as.motY += 0.4;
+                as.yaw += 6;
+            } else if (as.yaw > 100) {
+                as.motY += 0.3;
+                as.yaw += 7;
+            } else if (as.yaw > 60) {
+                as.motY += 0.2;
+                as.yaw += 9;
+            } else {
+                as.motY += 0.06;
+                as.yaw += 10;
             }
-            if (as.motY <= -8.0) {
+        } else {
+            if (as.yaw <= 0) {
                 up = true;
             }
+
+            if (as.yaw > 260) {
+                as.motY -= 0.6;
+                as.yaw -= 10;
+            } else if (as.yaw > 200) {
+                as.motY -= 0.5;
+                as.yaw -= 9;
+            } else if (as.yaw > 160) {
+                as.motY -= 0.4;
+                as.yaw -= 7;
+            } else if (as.yaw > 100) {
+                as.motY -= 0.3;
+                as.yaw -= 6;
+            } else if (as.yaw > 60) {
+                as.motY -= 0.2;
+                as.yaw -= 3;
+            } else {
+                as.motY -= 0.2;
+                as.yaw -= 2;
+            }
         }
-        PacketPlayOutEntityTeleport teleportPacket = new PacketPlayOutEntityTeleport(as.getId(), MathHelper.floor(loc.getX() * 32), MathHelper.floor(loc.getY() * 32), MathHelper.floor(loc.getZ() * 32), (byte) as.yaw, (byte) as.pitch, false);
-        PacketPlayOutEntityHeadRotation headRotationPacket = new PacketPlayOutEntityHeadRotation(as, (byte) as.yaw);
-        PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) as.motX, (byte) as.motY, (byte) as.motZ, (byte) as.yaw, (byte) as.pitch, false);
-        Utility.sendPacket(p, teleportPacket);
-        Utility.sendPacket(p, headRotationPacket);
-        Utility.sendPacket(p, velocityPacket);
+
+        PacketPlayOutEntityTeleport teleportPacket = new PacketPlayOutEntityTeleport(as.getId(), MathHelper.floor(loc.getX() * 32), MathHelper.floor(loc.getY() * 32), MathHelper.floor(loc.getZ() * 32), (byte) 0, (byte) 0, false);
+        PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook lookPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) 0, (byte) 0, (byte) 0, (byte) as.yaw, (byte) 0, false);
+        Utility.sendPlayersPacket(teleportPacket);
+        Utility.sendPlayersPacket(lookPacket);
     }
 }

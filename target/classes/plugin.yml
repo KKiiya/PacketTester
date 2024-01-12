@@ -13,3 +13,7 @@ commands:
     description: Dismount from the vehicle
     usage: /<command>
     aliases: [dm]
+  npc:
+    description: Spawn an NPC
+    usage: /<command>
+    aliases: [n]

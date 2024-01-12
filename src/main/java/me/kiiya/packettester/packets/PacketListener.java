@@ -5,16 +5,13 @@ import me.kiiya.packettester.events.PacketReadEvent;
 import me.kiiya.packettester.events.PacketWriteEvent;
 import me.kiiya.packettester.tasks.ArmorStandSpinTask;
 import me.kiiya.packettester.utils.Utility;
-import net.minecraft.server.v1_8_R3.PacketPlayInSteerVehicle;
+import net.minecraft.server.v1_8_R3.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Effect;
+import org.bukkit.Location;
 import org.bukkit.Sound;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.util.EulerAngle;
-import org.bukkit.util.Vector;
 
 // This is an example class to listen to packets.
 public class PacketListener implements Listener {
@@ -48,12 +45,7 @@ public class PacketListener implements Listener {
 
         // This is an example of how to listen to a packet.
         if (pac instanceof PacketPlayInSteerVehicle) {
-            ArmorStand as = (ArmorStand) p.getVehicle();
-            
-            if (ArmorStandSpinTask.spinningPlayers.contains(p)) {
-                e.setCancelled(true);
-                return;
-            }
+            EntityArmorStand as = Utility.getVehicle(p);
 
             PacketPlayInSteerVehicle packet = (PacketPlayInSteerVehicle) pac;
 
@@ -69,74 +61,61 @@ public class PacketListener implements Listener {
             boolean space = packet.c(); // jump (true/false)
             boolean unmount = packet.d(); // dismount (true/false)
 
-
-            p.getWorld().spigot().playEffect(as.getLocation(), Effect.FLAME, 0, 0, 0, 0, 0, 0, 1, 1);
-            p.getWorld().spigot().playEffect(as.getLocation(), Effect.HEART, 0, 0, 0, 0, 0, 0, 1, 1);
-            p.getWorld().spigot().playEffect(as.getLocation(), Effect.SLIME, 0, 0, 0, 0, 0, 0, 1, 1);
-            p.getWorld().spigot().playEffect(as.getLocation(), Effect.CLOUD, 0, 0, 0, 0, 0, 0, 1, 1);
-
             if (sides < 0) {
                 // RIGHT
-                double z = as.getHeadPose().getZ();
-                if (forward == 0) as.setHeadPose(new EulerAngle(Math.sin(as.getHeadPose().getZ()), as.getHeadPose().getY() + 0.05, -0.25));
-                else if (forward > 0) {
-                    as.setHeadPose(new EulerAngle(0, as.getHeadPose().getY() + 0.065, -0.5));
-                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*0.8, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*0.8));
-                }
-                else if (forward < 0) {
-                    as.setHeadPose(new EulerAngle(Math.sin(as.getHeadPose().getZ()), as.getHeadPose().getY() + 0.065, -0.25));
-                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*-0.5, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*-0.5));
-                }
+                as.yaw += 6;
+                PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) 0, (byte) (as.motY/3), (byte) 0, (byte) as.yaw, (byte) as.pitch, false);
+                PacketPlayOutEntityHeadRotation headRotationPacket = new PacketPlayOutEntityHeadRotation(as, (byte) as.yaw);
+                Utility.sendPlayersPacket(velocityPacket);
+                Utility.sendPlayersPacket(headRotationPacket);
+                System.out.println(as.yaw);
             } else if (sides > 0) {
                 // LEFT
-                double z = as.getHeadPose().getZ();
-                if (forward == 0) as.setHeadPose(new EulerAngle(Math.sin(as.getHeadPose().getZ()), as.getHeadPose().getY() - 0.05, 0.25));
-                else if (forward > 0) {
-                    as.setHeadPose(new EulerAngle(Math.sin(as.getHeadPose().getZ()), as.getHeadPose().getY() - 0.065, 0.25));
-                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*0.8, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*0.8));
-                }
-                else if (forward < 0) {
-                    as.setHeadPose(new EulerAngle(Math.sin(as.getHeadPose().getZ()), as.getHeadPose().getY() - 0.065, 0.25));
-                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*-0.5, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*-0.5));
-                }
+                as.yaw -= 6;
+                PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) 0, (byte) (as.motY/3), (byte) 0, (byte) as.yaw, (byte) as.pitch, false);
+                PacketPlayOutEntityHeadRotation headRotationPacket = new PacketPlayOutEntityHeadRotation(as, (byte) as.yaw);
+                Utility.sendPlayersPacket(velocityPacket);
+                Utility.sendPlayersPacket(headRotationPacket);
+                System.out.println(as.yaw);
             } else {
                 // CENTER
-                /*
-                double z = as.getHeadPose().getZ();
-                if (as.getHeadPose().getZ() > 0) z -= 0.05;
-                else if (as.getHeadPose().getZ() < 0) z += 0.05;
-                else z = 0;
-                as.setHeadPose(new EulerAngle(0, as.getHeadPose().getY(), z));
-                 */
-                as.setHeadPose(new EulerAngle(0, as.getHeadPose().getY(), 0));
-                if (forward > 0) {
-                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*1, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*1));
-                } else if (forward < 0) {
-                    as.setVelocity(new Vector(Math.cos(as.getHeadPose().getY() + Math.PI/2)*-0.5, 0, Math.sin(as.getHeadPose().getY() + Math.PI/2)*-0.5));
-                } else {
-                    double y = as.getVelocity().getY();
-
-                    y += 0.0025;
-                    if (as.getVelocity().getY() >= 0.05) y -= 0.05;
-                    else if (as.getVelocity().getY() <= -0.05) y += 0.05;
-
-                    as.setVelocity(new Vector(0, y, 0));
-                }
             }
 
-            if (forward == 0) p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 0.15F, 0.45F);
-            else if (forward > 0) p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 0.15F, 0.75F);
-            else if (forward < 0) p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 0.1F, 0.45F);
+            if (forward == 0) {
+                PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) 0, (byte) (as.motY/3), (byte) 0, (byte) 0, (byte) 0, false);
+                Utility.sendPlayersPacket(velocityPacket);
+                p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 0.15F, 0.45F);
+            }
+            else if (forward > 0) {
+                // FORWARD
+                as.motX = (float) (Math.sin(as.yaw) * 0.8);
+                as.motZ = (float) (Math.cos(as.yaw) * 0.8);
+                PacketPlayOutEntity.PacketPlayOutRelEntityMove velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(as.getId(), (byte) (as.motX*4096*-0.7), (byte) 0, (byte) (as.motZ*4096-0.7), true);
+                Utility.sendPlayersPacket(velocityPacket);
+                p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 0.15F, 0.75F);
+            }
+            else if (forward < 0) {
+                // BACKWARD
+                as.motX = (float) (Math.sin(as.yaw) * 0.8);
+                as.motZ = (float) (Math.cos(as.yaw) * -0.8);
+                PacketPlayOutEntity.PacketPlayOutRelEntityMove velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(as.getId(), (byte) (as.motX*4096*-0.7), (byte) 0, (byte) (as.motZ*4096*-0.7), true);
+                Utility.sendPlayersPacket(velocityPacket);
+                p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 0.1F, 0.45F);
+            }
 
-            p.getWorld().spigot().playEffect(as.getLocation().add(0, 1D, 1), Effect.LARGE_SMOKE, 0, 0, 0, 0, 0, 0, 1, 1);
-
-
-
-            if (space) p.playSound(p.getLocation(), Sound.ORB_PICKUP, 1, 1);
+            if (space) p.getWorld().playSound(new Location(p.getWorld(), as.locX, as.locY, as.locZ), Sound.ORB_PICKUP, 0.15F, 0.45F);
 
             if (unmount) {
                 if (sides == 0) {
-                    Bukkit.getScheduler().runTaskAsynchronously(PacketTester.getInstance(), new ArmorStandSpinTask(as, p));
+                    int taskid = Bukkit.getScheduler().runTaskTimer(PacketTester.getInstance(), new ArmorStandSpinTask(as, p), 0L, 1L).getTaskId();
+                    Bukkit.getScheduler().runTaskLater(PacketTester.getInstance(), () -> {
+                        Bukkit.getScheduler().cancelTask(taskid);
+                        as.motX = 0;
+                        as.motY = 0;
+                        as.motZ = 0;
+                        PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(as.getId(), 0, 0, 0);
+                        Utility.sendPlayersPacket(velocityPacket);
+                    }, 60L);
                 }
 
                 // This will prevent the packet from being read.

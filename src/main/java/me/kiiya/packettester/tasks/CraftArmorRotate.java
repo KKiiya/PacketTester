@@ -21,53 +21,17 @@ public class CraftArmorRotate implements Runnable {
     @Override
     public void run() {
         if (up) {
-            if (as.yaw >= 270) {
+            if (as.yaw <= -360) {
                 up = false;
             }
 
-            if (as.yaw > 260) {
-                as.motY += 0.6;
-                as.yaw += 2;
-            } else if (as.yaw > 200) {
-                as.motY += 0.5;
-                as.yaw += 3;
-            } else if (as.yaw > 160) {
-                as.motY += 0.4;
-                as.yaw += 6;
-            } else if (as.yaw > 100) {
-                as.motY += 0.3;
-                as.yaw += 7;
-            } else if (as.yaw > 60) {
-                as.motY += 0.2;
-                as.yaw += 9;
-            } else {
-                as.motY += 0.06;
-                as.yaw += 10;
-            }
         } else {
-            if (as.yaw <= 0) {
+            if (as.yaw >= 0) {
                 up = true;
             }
 
-            if (as.yaw > 260) {
-                as.motY -= 0.6;
-                as.yaw -= 10;
-            } else if (as.yaw > 200) {
-                as.motY -= 0.5;
-                as.yaw -= 9;
-            } else if (as.yaw > 160) {
-                as.motY -= 0.4;
-                as.yaw -= 7;
-            } else if (as.yaw > 100) {
-                as.motY -= 0.3;
-                as.yaw -= 6;
-            } else if (as.yaw > 60) {
-                as.motY -= 0.2;
-                as.yaw -= 3;
-            } else {
-                as.motY -= 0.2;
-                as.yaw -= 2;
-            }
+
+
         }
 
         PacketPlayOutEntityTeleport teleportPacket = new PacketPlayOutEntityTeleport(as.getId(), MathHelper.floor(loc.getX() * 32), MathHelper.floor(loc.getY() * 32), MathHelper.floor(loc.getZ() * 32), (byte) 0, (byte) 0, false);

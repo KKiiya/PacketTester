@@ -11,25 +11,26 @@ public class VehicleFloatTask implements Runnable {
 
     public VehicleFloatTask(EntityArmorStand as) {
         this.as = as;
+        this.as.motY = 0;
     }
 
     @Override
     public void run() {
         if (up) {
-            as.motY += 1;
+            as.motY += 0.8;
 
             if (as.motY >= 5) {
                 up = false;
             }
         } else {
-            as.motY -= 1;
+            as.motY -= 0.8;
 
             if (as.motY <= -5) {
                 up = true;
             }
         }
 
-        PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) as.motX, (byte) as.motY, (byte) as.motZ, (byte) as.yaw, (byte) as.pitch, false);
+        PacketPlayOutEntity.PacketPlayOutRelEntityMove velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(as.getId(), (byte) 0, (byte) as.motY, (byte) 0, false);
         Utility.sendPlayersPacket(velocityPacket);
     }
 }

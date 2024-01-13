@@ -1,9 +1,13 @@
 package me.kiiya.packettester.utils;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import me.kiiya.packettester.PacketTester;
 import me.kiiya.packettester.tasks.CraftArmorRotate;
+import me.kiiya.packettester.tasks.FollowPet;
 import me.kiiya.packettester.tasks.VehicleFloatTask;
 import net.minecraft.server.v1_8_R3.*;
+import org.apache.commons.codec.binary.Base64;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -14,8 +18,11 @@ import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class Utility {
     private static final HashMap<Player, EntityArmorStand> playerVehicle = new HashMap<>();
@@ -88,11 +95,61 @@ public class Utility {
         a.setPassenger(p);
     }
 
+    public static void spawnPekoraPet(Player p) {
+        Location loc = p.getLocation();
+        EntityArmorStand as = new EntityArmorStand(((CraftPlayer) p).getHandle().getWorld(), loc.getX(), loc.getY(), loc.getZ());
+        CraftArmorStand a = new CraftArmorStand((CraftServer) PacketTester.getInstance().getServer(), as);
+        a.setGravity(false);
+        a.setBasePlate(false);
+        a.setVisible(false);
+        a.setCustomName(c("&b兎田ぺこら &fこんぺここんぺここんぺこ！ &7「" + p.getName() + "さん" + "」"));
+        a.setCustomNameVisible(true);
+        a.setSmall(true);
+        PacketPlayOutSpawnEntityLiving spawnPacket = new PacketPlayOutSpawnEntityLiving(as);
+        PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(as.getId(), as.getDataWatcher(), true);
+        ItemStack head = getSkull("https://textures.minecraft.net/c8bbdb00195bf569aa5fdb0f61e50bd91235ebb2f36baa4ad66b62f74e56dfa5");
+        PacketPlayOutEntityEquipment equipmentPacket = new PacketPlayOutEntityEquipment(as.getId(), 4, CraftItemStack.asNMSCopy(head));
+        sendPlayersPacket(spawnPacket);
+        sendPlayersPacket(metadataPacket);
+        sendPlayersPacket(equipmentPacket);
+        Bukkit.getScheduler().runTaskTimer(PacketTester.getInstance(), new FollowPet(p, as), 0, 1);
+    }
+
     public static EntityArmorStand getVehicle(Player p) {
         return playerVehicle.get(p);
     }
 
     public static CraftArmorStand getCraftArmorStand(EntityArmorStand as) {
         return craftArmorStand.get(as);
+    }
+
+    public static ItemStack getSkull(String url) {
+        ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+
+        if (url == null || url.isEmpty())
+            return skull;
+
+        ItemMeta skullMeta = skull.getItemMeta();
+        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+        byte[] encodedData = Base64.encodeBase64(String.format("{textures:{SKIN:{url:\"%s\"}}}", url).getBytes());
+        profile.getProperties().put("textures", new Property("textures", new String(encodedData)));
+        Field profileField;
+
+        try {
+            profileField = skullMeta.getClass().getDeclaredField("profile");
+        } catch (NoSuchFieldException | SecurityException e) {
+            throw new RuntimeException(e);
+        }
+
+        profileField.setAccessible(true);
+
+        try {
+            profileField.set(skullMeta, profile);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        skull.setItemMeta(skullMeta);
+        return skull;
     }
 }

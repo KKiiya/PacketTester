@@ -4,8 +4,10 @@ import me.kiiya.packettester.commands.PekoraPetCommand;
 import me.kiiya.packettester.commands.RecordingCommand;
 import me.kiiya.packettester.commands.VehicleDismountCommand;
 import me.kiiya.packettester.commands.VehicleSummonCommand;
+import me.kiiya.packettester.listeners.BlockPlaceListener;
 import me.kiiya.packettester.packets.Injector;
 import me.kiiya.packettester.packets.InjectorHandler;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class PacketTester extends JavaPlugin {
@@ -19,6 +21,7 @@ public final class PacketTester extends JavaPlugin {
 
         // SETTING THE SINGLETON INSTANCE
         instance = this;
+
         // INITIALIZING THE INJECTOR HANDLER
         //InjectorHandler.init();
 
@@ -27,6 +30,9 @@ public final class PacketTester extends JavaPlugin {
         getCommand("dismount").setExecutor(new VehicleDismountCommand());
         getCommand("pekorapet").setExecutor(new PekoraPetCommand());
         getCommand("recording").setExecutor(new RecordingCommand());
+
+        // REGISTERING LISTENERS (This is not important)
+        Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(), this);
     }
 
     @Override

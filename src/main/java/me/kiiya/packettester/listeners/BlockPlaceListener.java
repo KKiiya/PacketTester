@@ -2,8 +2,6 @@ package me.kiiya.packettester.listeners;
 
 import me.kiiya.packettester.replays.Frame;
 import me.kiiya.packettester.replays.Replay;
-import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_8_R3.block.CraftBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

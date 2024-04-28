@@ -15,6 +15,7 @@ import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,6 +66,18 @@ public class Replay {
                         });
                         BlockPosition blockPosition = new BlockPosition(frame.getBlockLocation().getBlockX(), frame.getBlockLocation().getBlockY(), frame.getBlockLocation().getBlockZ());
                         WorldServer world = ((CraftWorld) frame.getBlockLocation().getWorld()).getHandle();
+                        for (ItemStack drop : block.getDrops()) {
+                            EntityItem entityItem = new EntityItem(world, blockPosition.getX(), blockPosition.getY(), blockPosition.getZ(), CraftItemStack.asNMSCopy(drop));
+                            CraftItem craftItem = new CraftItem(((CraftServer) PacketTester.getInstance().getServer()), entityItem);
+                            craftItem.setPickupDelay(0);
+                            craftItem.setVelocity(new Vector(0.15, 15, 0.15));
+                            PacketPlayOutSpawnEntity spawnEntity = new PacketPlayOutSpawnEntity(entityItem, 2);
+                            PacketPlayOutEntityMetadata entityMetadata = new PacketPlayOutEntityMetadata(entityItem.getId(), entityItem.getDataWatcher(), true);
+                            PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(entityItem.getId(), 0.15, 15, 0.15);
+                            connection.sendPacket(spawnEntity);
+                            connection.sendPacket(entityMetadata);
+                            connection.sendPacket(velocityPacket);
+                        }
                         PacketPlayOutBlockChange blockChangePacket = new PacketPlayOutBlockChange(world, blockPosition);
                         connection.sendPacket(blockChangePacket);
                     }
@@ -76,30 +89,24 @@ public class Replay {
                         block.setType(frame.getItemInHand().getType());
                         block.setData(frame.getItemInHand().getData().getData());
                     });
-                    EntityItem drop = new EntityItem(((CraftWorld) block.getWorld()).getHandle(), block.getLocation().getX(), block.getLocation().getY(), block.getLocation().getZ(), CraftItemStack.asNMSCopy(frame.getItemInHand()));
-                    CraftItem craftItem = new CraftItem(((CraftServer) PacketTester.getInstance().getServer()), drop);
-                    craftItem.setPickupDelay(0);
-                    PacketPlayOutSpawnEntity spawnEntity = new PacketPlayOutSpawnEntity(drop, 2);
-                    PacketPlayOutEntityMetadata entityMetadata = new PacketPlayOutEntityMetadata(drop.getId(), drop.getDataWatcher(), true);
-                    PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(drop.getId(), drop.motX, drop.motY, drop.motZ);
                     PacketPlayOutBlockChange blockChangePacket = new PacketPlayOutBlockChange(((CraftWorld) frame.getBlockLocation().getWorld()).getHandle(), new BlockPosition(frame.getBlockLocation().getBlockX(), frame.getBlockLocation().getBlockY(), frame.getBlockLocation().getBlockZ()));
                     connection.sendPacket(animationPacket);
-                    connection.sendPacket(blockChangePacket);
-                    connection.sendPacket(spawnEntity);
-                    connection.sendPacket(entityMetadata);
-                    connection.sendPacket(velocityPacket);
+                    connection.sendPacket(blockChangePacket);;
                 }
                 if (frame.getPickupItem() != null) {
                     PacketPlayOutCollect collectPacket = new PacketPlayOutCollect(frame.getPickupItem().getEntityId(), npc.getId());
+                    PacketPlayOutEntityDestroy destroyPacket = new PacketPlayOutEntityDestroy(frame.getPickupItem().getEntityId());
                     connection.sendPacket(collectPacket);
+                    connection.sendPacket(destroyPacket);
                 }
                 if (frame.getDropItem() != null) {
-                    EntityItem drop = new EntityItem(((CraftWorld) frame.getLocation().getWorld()).getHandle(), frame.getLocation().getX(), frame.getLocation().getY(), frame.getLocation().getZ(), CraftItemStack.asNMSCopy(frame.getDropItem().getItemStack()));
+                    EntityItem drop = new EntityItem(((CraftWorld) frame.getLocation().getWorld()).getHandle(), frame.getLocation().getX(), frame.getLocation().getY(), frame.getLocation().getZ(), CraftItemStack.asNMSCopy(frame.getItemInHand()));
                     CraftItem craftItem = new CraftItem(((CraftServer) PacketTester.getInstance().getServer()), drop);
                     craftItem.setPickupDelay(0);
                     PacketPlayOutSpawnEntity spawnEntity = new PacketPlayOutSpawnEntity(drop, 2);
                     PacketPlayOutEntityMetadata entityMetadata = new PacketPlayOutEntityMetadata(drop.getId(), drop.getDataWatcher(), true);
-                    PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(drop.getId(), drop.motX, drop.motY, drop.motZ);
+                    Vector dropDirection = new Location(npc.getWorld().getWorld(), npc.locX, npc.locY, npc.locZ).getDirection();
+                    PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(drop.getId(), dropDirection.getX(), dropDirection.getY(), dropDirection.getZ());
                     connection.sendPacket(spawnEntity);
                     connection.sendPacket(entityMetadata);
                     connection.sendPacket(velocityPacket);

@@ -8,15 +8,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-
-import java.util.HashMap;
-import java.util.List;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 
 public class BlockPlaceListener implements Listener {
-    public static final HashMap<Player, List<Block>> blocks = new HashMap<>();
-    public static final HashMap<Player, List<Block>> originalBlocks = new HashMap<>();
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
@@ -25,10 +23,18 @@ public class BlockPlaceListener implements Listener {
             Frame frame = Replay.replays.get(player).getFrames().get(Replay.replays.get(player).getFrames().size() - 1);
             frame.setItemInHand(player.getItemInHand());
             frame.setPlacing(true);
-            List<Block> blockList = blocks.get(player);
-            List<Block> originalBlockList = originalBlocks.get(player);
-            blockList.add(event.getBlock());
-            blocks.put(player, blockList);
+            frame.setBlockLocation(event.getBlock().getLocation());
+        }
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        if (Replay.recordingPlayers.contains(player)) {
+            Frame frame = Replay.replays.get(player).getFrames().get(Replay.replays.get(player).getFrames().size() - 1);
+            frame.setItemInHand(player.getItemInHand());
+            frame.setHitting(true);
+            frame.setBlockLocation(event.getBlock().getLocation());
         }
     }
 
@@ -41,6 +47,37 @@ public class BlockPlaceListener implements Listener {
             Frame frame = Replay.replays.get(player).getFrames().get(Replay.replays.get(player).getFrames().size() - 1);
             frame.setItemInHand(player.getItemInHand());
             frame.setHitting(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlock(PlayerInteractEvent e) {
+        Player player = e.getPlayer();
+        if (e.getAction() != Action.LEFT_CLICK_AIR) return;
+
+        if (Replay.recordingPlayers.contains(player)) {
+            Frame frame = Replay.replays.get(player).getFrames().get(Replay.replays.get(player).getFrames().size() - 1);
+            frame.setItemInHand(player.getItemInHand());
+            frame.setPlacing(true);
+            frame.setBlockLocation(e.getClickedBlock().getLocation());
+        }
+    }
+
+    @EventHandler
+    public void onItemPickup(PlayerPickupItemEvent e) {
+        Player player = e.getPlayer();
+        if (Replay.recordingPlayers.contains(player)) {
+            Frame frame = Replay.replays.get(player).getFrames().get(Replay.replays.get(player).getFrames().size() - 1);
+            frame.setPickupItem(e.getItem());
+        }
+    }
+
+    @EventHandler
+    public void onItemDrop(PlayerDropItemEvent e) {
+        Player player = e.getPlayer();
+        if (Replay.recordingPlayers.contains(player)) {
+            Frame frame = Replay.replays.get(player).getFrames().get(Replay.replays.get(player).getFrames().size() - 1);
+            frame.setDropItem(e.getItemDrop());
         }
     }
 }

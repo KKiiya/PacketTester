@@ -1,6 +1,7 @@
 package me.kiiya.packettester;
 
 import me.kiiya.packettester.commands.PekoraPetCommand;
+import me.kiiya.packettester.commands.RecordingCommand;
 import me.kiiya.packettester.commands.VehicleDismountCommand;
 import me.kiiya.packettester.commands.VehicleSummonCommand;
 import me.kiiya.packettester.packets.Injector;
@@ -19,12 +20,13 @@ public final class PacketTester extends JavaPlugin {
         // SETTING THE SINGLETON INSTANCE
         instance = this;
         // INITIALIZING THE INJECTOR HANDLER
-        InjectorHandler.init();
+        //InjectorHandler.init();
 
         // REGISTERING COMMANDS (This is not important)
         getCommand("vehicle").setExecutor(new VehicleSummonCommand());
         getCommand("dismount").setExecutor(new VehicleDismountCommand());
         getCommand("pekorapet").setExecutor(new PekoraPetCommand());
+        getCommand("recording").setExecutor(new RecordingCommand());
     }
 
     @Override

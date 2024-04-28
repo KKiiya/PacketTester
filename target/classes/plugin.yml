@@ -17,3 +17,7 @@ commands:
     description: Spawn a pekora pet
     usage: /<command>
     aliases: [n]
+  recording:
+    description: Start recording packets
+    usage: /<command>
+    aliases: [r]

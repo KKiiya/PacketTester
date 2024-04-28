@@ -16,21 +16,6 @@ public class VehicleFloatTask implements Runnable {
 
     @Override
     public void run() {
-        if (up) {
-            as.motY += 0.8;
 
-            if (as.motY >= 5) {
-                up = false;
-            }
-        } else {
-            as.motY -= 0.8;
-
-            if (as.motY <= -5) {
-                up = true;
-            }
-        }
-
-        PacketPlayOutEntity.PacketPlayOutRelEntityMove velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(as.getId(), (byte) 0, (byte) as.motY, (byte) 0, false);
-        Utility.sendPlayersPacket(velocityPacket);
     }
 }

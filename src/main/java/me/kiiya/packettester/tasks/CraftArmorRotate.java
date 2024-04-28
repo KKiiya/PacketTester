@@ -21,17 +21,34 @@ public class CraftArmorRotate implements Runnable {
     @Override
     public void run() {
         if (up) {
-            if (as.yaw <= -360) {
+            if (as.yaw >= 360) {
                 up = false;
             }
 
+            if (as.yaw > 320) {
+                as.yaw += 1;
+            } else if (as.yaw > 290) {
+                as.yaw += 2;
+            } else if (as.yaw > 240) {
+                as.yaw += 3;
+            } else {
+                as.yaw += 4;
+            }
         } else {
-            if (as.yaw >= 0) {
-                up = true;
+
+            if (as.yaw < -120) {
+                as.yaw -= 4;
+            } else if (as.yaw < -90) {
+                as.yaw -= 3;
+            } else if (as.yaw < -70) {
+                as.yaw -= 2;
+            } else {
+                as.yaw -= 1;
             }
 
-
-
+            if (as.yaw <= -360) {
+                up = true;
+            }
         }
 
         PacketPlayOutEntityTeleport teleportPacket = new PacketPlayOutEntityTeleport(as.getId(), MathHelper.floor(loc.getX() * 32), MathHelper.floor(loc.getY() * 32), MathHelper.floor(loc.getZ() * 32), (byte) 0, (byte) 0, false);

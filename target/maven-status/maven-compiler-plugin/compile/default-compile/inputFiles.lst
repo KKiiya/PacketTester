@@ -1,5 +1,7 @@
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\tasks\FollowPet.java
+C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\tasks\PlayRecordTask.java
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\packets\PacketListener.java
+C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\tasks\RecordTask.java
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\utils\Utility.java
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\commands\PekoraPetCommand.java
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\packets\InjectorHandler.java
@@ -9,6 +11,7 @@ C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\commands\VehicleSummonCommand.java
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\events\PacketReadEvent.java
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\commands\VehicleDismountCommand.java
+C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\commands\RecordingCommand.java
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\events\PacketWriteEvent.java
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\PacketTester.java
 C:\Users\Kiiya\Documents\GitHub\PacketTester\src\main\java\me\kiiya\packettester\tasks\ArmorStandSpinTask.java

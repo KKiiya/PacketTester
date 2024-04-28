@@ -13,6 +13,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
+import java.util.HashMap;
+
 // This is an example class to listen to packets.
 public class PacketListener implements Listener {
     // Packets are handled by the server, so we need to register a listener to the server.
@@ -35,6 +37,8 @@ public class PacketListener implements Listener {
         // Utility.log("&bPacket write: " + e.getPacket().getClass().getSimpleName());
     }
 
+    private final HashMap<Player, Integer> time = new HashMap<>();
+
     // PacketReadEvent is called when a packet is received from the client.
     @EventHandler
     public void onPacketRead(PacketReadEvent e) {
@@ -46,6 +50,7 @@ public class PacketListener implements Listener {
         // This is an example of how to listen to a packet.
         if (pac instanceof PacketPlayInSteerVehicle) {
             EntityArmorStand as = Utility.getVehicle(p);
+            time.putIfAbsent(p, 0);
 
             PacketPlayInSteerVehicle packet = (PacketPlayInSteerVehicle) pac;
 
@@ -61,44 +66,54 @@ public class PacketListener implements Listener {
             boolean space = packet.c(); // jump (true/false)
             boolean unmount = packet.d(); // dismount (true/false)
 
+            // Calculate the direction vector using the yaw value
+            double dirX = Math.cos(Math.toRadians(as.yaw));
+            double dirZ = Math.sin(Math.toRadians(as.yaw));
+
             if (sides < 0) {
                 // RIGHT
                 as.yaw += 6;
-                PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) 0, (byte) (as.motY/3), (byte) 0, (byte) as.yaw, (byte) as.pitch, false);
-                PacketPlayOutEntityHeadRotation headRotationPacket = new PacketPlayOutEntityHeadRotation(as, (byte) as.yaw);
+                PacketPlayOutEntityTeleport teleportPacket = new PacketPlayOutEntityTeleport(as);
+                PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) 0, (byte) 0, (byte) 0, (byte) as.yaw, (byte) 0, false);
+                Utility.sendPlayersPacket(teleportPacket);
                 Utility.sendPlayersPacket(velocityPacket);
-                Utility.sendPlayersPacket(headRotationPacket);
-                System.out.println(as.yaw);
             } else if (sides > 0) {
                 // LEFT
                 as.yaw -= 6;
-                PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) 0, (byte) (as.motY/3), (byte) 0, (byte) as.yaw, (byte) as.pitch, false);
-                PacketPlayOutEntityHeadRotation headRotationPacket = new PacketPlayOutEntityHeadRotation(as, (byte) as.yaw);
+                PacketPlayOutEntityTeleport teleportPacket = new PacketPlayOutEntityTeleport(as);
+                PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) 0, (byte) 0, (byte) 0, (byte) as.yaw, (byte) 0, false);
+                Utility.sendPlayersPacket(teleportPacket);
                 Utility.sendPlayersPacket(velocityPacket);
-                Utility.sendPlayersPacket(headRotationPacket);
-                System.out.println(as.yaw);
             } else {
                 // CENTER
             }
 
             if (forward == 0) {
-                PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) 0, (byte) (as.motY/3), (byte) 0, (byte) 0, (byte) 0, false);
-                Utility.sendPlayersPacket(velocityPacket);
+                as.motY = 0.8 * Math.sin(time.get(p));
                 p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 0.15F, 0.45F);
+                PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(as.getId(), (byte) 0, (byte) as.motY, (byte) 0, (byte) 0, (byte) 0, false);
+                Utility.sendPlayersPacket(velocityPacket);
+
             }
             else if (forward > 0) {
                 // FORWARD
-                as.motX = (float) (Math.sin(as.yaw) * 0.8);
-                as.motZ = (float) (Math.cos(as.yaw) * 0.8);
-                PacketPlayOutEntity.PacketPlayOutRelEntityMove velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(as.getId(), (byte) (as.motX*4096*-0.7), (byte) 0, (byte) (as.motZ*4096-0.7), true);
+                as.motX = dirX * 25;
+                as.motZ = dirZ * 25;
+                double nextX = as.locX + (as.motX/32);
+                double nextZ = as.locZ + (as.motZ/32);
+                as.setLocation(nextX, as.locY, nextZ, as.yaw, as.pitch);
+                PacketPlayOutEntity.PacketPlayOutRelEntityMove velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(as.getId(), (byte) as.motX, (byte) 0, (byte) as.motZ, true);
                 Utility.sendPlayersPacket(velocityPacket);
                 p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 0.15F, 0.75F);
             }
             else if (forward < 0) {
-                // BACKWARD
-                as.motX = (float) (Math.sin(as.yaw) * 0.8);
-                as.motZ = (float) (Math.cos(as.yaw) * -0.8);
-                PacketPlayOutEntity.PacketPlayOutRelEntityMove velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(as.getId(), (byte) (as.motX*4096*-0.7), (byte) 0, (byte) (as.motZ*4096*-0.7), true);
+                // BACKWARDS
+                as.motX = -dirX * 25;
+                as.motZ = -dirZ * 25;
+                double nextX = as.locX + (as.motX/32);
+                double nextZ = as.locZ + (as.motZ/32);
+                as.setLocation(nextX, as.locY, nextZ, as.yaw, as.pitch);
+                PacketPlayOutEntity.PacketPlayOutRelEntityMove velocityPacket = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(as.getId(), (byte) as.motX, (byte) 0, (byte) as.motZ, true);
                 Utility.sendPlayersPacket(velocityPacket);
                 p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 0.1F, 0.45F);
             }
@@ -122,6 +137,7 @@ public class PacketListener implements Listener {
                 e.setCancelled(true);
             }
         }
+        time.put(p, time.get(p) + 1);
         // End of example.
 
     }

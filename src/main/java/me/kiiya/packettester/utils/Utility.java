@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R3.CraftServer;
+import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftArmorStand;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
@@ -151,5 +152,16 @@ public class Utility {
 
         skull.setItemMeta(skullMeta);
         return skull;
+    }
+
+    public static EntityPlayer createNpc(Player p, Location loc) {
+        MinecraftServer server = ((CraftServer) Bukkit.getServer()).getServer();
+        WorldServer world = ((CraftWorld) loc.getWorld()).getHandle();
+        GameProfile profile = new GameProfile(UUID.randomUUID(), "NPC");
+        EntityPlayer npc = new EntityPlayer(server, world, profile, new PlayerInteractManager(world));
+        npc.setLocation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+        ((CraftPlayer) p).getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, npc));
+        ((CraftPlayer) p).getHandle().playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(npc));
+        return npc;
     }
 }

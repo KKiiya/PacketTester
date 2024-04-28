@@ -7,8 +7,17 @@ import me.kiiya.packettester.commands.VehicleSummonCommand;
 import me.kiiya.packettester.listeners.BlockPlaceListener;
 import me.kiiya.packettester.packets.Injector;
 import me.kiiya.packettester.packets.InjectorHandler;
+import net.minecraft.server.v1_8_R3.Block;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.craftbukkit.v1_8_R3.CraftSound;
+import org.bukkit.craftbukkit.v1_8_R3.block.CraftBlock;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 
 public final class PacketTester extends JavaPlugin {
 

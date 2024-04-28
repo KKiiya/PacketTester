@@ -12,6 +12,7 @@ import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftItem;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_8_R3.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -55,6 +56,7 @@ public class Replay {
                 PacketPlayOutEntityEquipment leggingsEquipmentPacket = new PacketPlayOutEntityEquipment(npc.getId(), 2, CraftItemStack.asNMSCopy(frame.getLeggings() == null ? new ItemStack(Material.AIR) : frame.getLeggings()));
                 PacketPlayOutEntityEquipment bootsEquipmentPacket = new PacketPlayOutEntityEquipment(npc.getId(), 1, CraftItemStack.asNMSCopy(frame.getBoots() == null ? new ItemStack(Material.AIR) : frame.getBoots()));
                 PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(npc.getId(), npc.getDataWatcher(), true);
+                PacketPlayOutNamedSoundEffect soundPacket = new PacketPlayOutNamedSoundEffect(getSounds(location.getBlock()).getStepSound(), location.getX(), location.getY(), location.getZ(), getSounds(location.getBlock()).getVolume2(), getSounds(location.getBlock()).getVolume1());
 
                 if (frame.isHitting()) {
                     PacketPlayOutAnimation animationPacket = new PacketPlayOutAnimation(npc, frame.isHitting() ? 0 : 1);
@@ -70,7 +72,7 @@ public class Replay {
                             EntityItem entityItem = new EntityItem(world, blockPosition.getX(), blockPosition.getY(), blockPosition.getZ(), CraftItemStack.asNMSCopy(drop));
                             CraftItem craftItem = new CraftItem(((CraftServer) PacketTester.getInstance().getServer()), entityItem);
                             craftItem.setPickupDelay(0);
-                            craftItem.setVelocity(new Vector(0.15, 15, 0.15));
+                            craftItem.setVelocity(new Vector(0.15, 0.25, 0.15));
                             PacketPlayOutSpawnEntity spawnEntity = new PacketPlayOutSpawnEntity(entityItem, 2);
                             PacketPlayOutEntityMetadata entityMetadata = new PacketPlayOutEntityMetadata(entityItem.getId(), entityItem.getDataWatcher(), true);
                             PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(entityItem.getId(), 0.15, 15, 0.15);
@@ -78,12 +80,15 @@ public class Replay {
                             connection.sendPacket(entityMetadata);
                             connection.sendPacket(velocityPacket);
                         }
+                        PacketPlayOutNamedSoundEffect breakSoundPacket = new PacketPlayOutNamedSoundEffect(getSounds(block).getBreakSound(), location.getX(), location.getY(), location.getZ(), getSounds(block).getVolume2(), getSounds(block).getVolume1());
                         PacketPlayOutBlockChange blockChangePacket = new PacketPlayOutBlockChange(world, blockPosition);
                         connection.sendPacket(blockChangePacket);
+                        connection.sendPacket(breakSoundPacket);
                     }
                 }
                 if (frame.isPlacing() && frame.getBlockLocation() != null && frame.getItemInHand() != null && frame.getItemInHand().getType().isBlock()) {
                     Block block = location.getWorld().getBlockAt(frame.getBlockLocation());
+                    PacketPlayOutNamedSoundEffect placeSoundPacket = new PacketPlayOutNamedSoundEffect(getSounds(block).getPlaceSound(), location.getX(), location.getY(), location.getZ(), getSounds(block).getVolume2(), getSounds(block).getVolume1());
                     PacketPlayOutAnimation animationPacket = new PacketPlayOutAnimation(npc, 0);
                     Bukkit.getScheduler().runTask(PacketTester.getInstance(), () -> {
                         block.setType(frame.getItemInHand().getType());
@@ -92,6 +97,7 @@ public class Replay {
                     PacketPlayOutBlockChange blockChangePacket = new PacketPlayOutBlockChange(((CraftWorld) frame.getBlockLocation().getWorld()).getHandle(), new BlockPosition(frame.getBlockLocation().getBlockX(), frame.getBlockLocation().getBlockY(), frame.getBlockLocation().getBlockZ()));
                     connection.sendPacket(animationPacket);
                     connection.sendPacket(blockChangePacket);;
+                    connection.sendPacket(placeSoundPacket);
                 }
                 if (frame.getPickupItem() != null) {
                     PacketPlayOutCollect collectPacket = new PacketPlayOutCollect(frame.getPickupItem().getEntityId(), npc.getId());
@@ -105,13 +111,16 @@ public class Replay {
                     craftItem.setPickupDelay(0);
                     PacketPlayOutSpawnEntity spawnEntity = new PacketPlayOutSpawnEntity(drop, 2);
                     PacketPlayOutEntityMetadata entityMetadata = new PacketPlayOutEntityMetadata(drop.getId(), drop.getDataWatcher(), true);
-                    Vector dropDirection = new Location(npc.getWorld().getWorld(), npc.locX, npc.locY, npc.locZ).getDirection();
+                    Vector dropDirection = new Location(npc.getWorld().getWorld(), npc.locX, npc.locY + 1.8, npc.locZ, npc.yaw, npc.pitch).getDirection();
                     PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(drop.getId(), dropDirection.getX(), dropDirection.getY(), dropDirection.getZ());
                     connection.sendPacket(spawnEntity);
                     connection.sendPacket(entityMetadata);
                     connection.sendPacket(velocityPacket);
                 }
                 connection.sendPacket(metadataPacket);
+                if (frames.get(frames.indexOf(frame) == 0 ? 0 : frames.indexOf(frame) - 1).getLocation().distance(location) > 1.5 && frame.getLocation().getBlock().getType() != Material.AIR) {
+                    connection.sendPacket(soundPacket);
+                }
                 connection.sendPacket(movementPacket);
                 connection.sendPacket(headRotation);
                 connection.sendPacket(packetPlayOutEntityLook);
@@ -136,5 +145,10 @@ public class Replay {
     public void stopRecording() {
         recordingPlayers.remove(player);
         Bukkit.getScheduler().cancelTask(recordingTaskId);
+    }
+
+    public static net.minecraft.server.v1_8_R3.Block.StepSound getSounds(Block block) {
+        net.minecraft.server.v1_8_R3.Block nmsBlock = CraftMagicNumbers.getBlock(block);
+        return nmsBlock.stepSound;
     }
 }

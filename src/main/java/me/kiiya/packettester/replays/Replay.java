@@ -48,6 +48,9 @@ public class Replay {
             Bukkit.getScheduler().runTaskLaterAsynchronously(PacketTester.getInstance(), () -> {
                 Location location = frame.getLocation();
                 npc.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+                npc.setSneaking(frame.isSneaking());
+                if (frame.isBlocking()) npc.getDataWatcher().watch(8, (byte) 0x01);
+                else npc.getDataWatcher().watch(8, (byte) 0x00);
                 PacketPlayOutEntityTeleport movementPacket = new PacketPlayOutEntityTeleport(npc);
                 PacketPlayOutEntityHeadRotation headRotation = new PacketPlayOutEntityHeadRotation(npc, (byte) ((location.getYaw() * 256.0F) / 360.0F));
                 PacketPlayOutEntity.PacketPlayOutEntityLook packetPlayOutEntityLook = new PacketPlayOutEntity.PacketPlayOutEntityLook(npc.getId(), (byte) ((location.getYaw() * 256.0F) / 360.0F), (byte) ((location.getPitch() * 256.0F) / 360.0F), true);
@@ -56,11 +59,11 @@ public class Replay {
                 PacketPlayOutEntityEquipment chestplateEquipmentPacket = new PacketPlayOutEntityEquipment(npc.getId(), 3, CraftItemStack.asNMSCopy(frame.getChestplate() == null ? new ItemStack(Material.AIR) : frame.getChestplate()));
                 PacketPlayOutEntityEquipment leggingsEquipmentPacket = new PacketPlayOutEntityEquipment(npc.getId(), 2, CraftItemStack.asNMSCopy(frame.getLeggings() == null ? new ItemStack(Material.AIR) : frame.getLeggings()));
                 PacketPlayOutEntityEquipment bootsEquipmentPacket = new PacketPlayOutEntityEquipment(npc.getId(), 1, CraftItemStack.asNMSCopy(frame.getBoots() == null ? new ItemStack(Material.AIR) : frame.getBoots()));
-                PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(npc.getId(), frame.getDataWatcher(), true);
+                PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(npc.getId(), npc.getDataWatcher(), true);
                 PacketPlayOutNamedSoundEffect soundPacket = new PacketPlayOutNamedSoundEffect(getSounds(location.getBlock()).getStepSound(), location.getX(), location.getY(), location.getZ(), getSounds(location.getBlock()).getVolume2(), getSounds(location.getBlock()).getVolume1());
 
                 if (frame.isHitting()) {
-                    PacketPlayOutAnimation animationPacket = new PacketPlayOutAnimation(npc, frame.isHitting() ? 0 : 1);
+                    PacketPlayOutAnimation animationPacket = new PacketPlayOutAnimation(npc, 0);
                     connection.sendPacket(animationPacket);
                     if (frame.getBlockLocation() != null) {
                         Block block = location.getWorld().getBlockAt(frame.getBlockLocation());
@@ -111,13 +114,6 @@ public class Replay {
                     connection.sendPacket(damageSoundPacket);
                 }
 
-                if (frame.isBlocking()) {
-                    DataWatcher dataWatcher = new DataWatcher(npc);
-                    dataWatcher.a(9, (byte) 0x01);
-                    PacketPlayOutEntityMetadata entityMetadata = new PacketPlayOutEntityMetadata(npc.getId(), dataWatcher, true);
-                    connection.sendPacket(entityMetadata);
-                }
-
                 if (frame.getPickupItem() != null) {
                     PacketPlayOutCollect collectPacket = new PacketPlayOutCollect(frame.getPickupItem().getEntityId(), npc.getId());
                     PacketPlayOutEntityDestroy destroyPacket = new PacketPlayOutEntityDestroy(frame.getPickupItem().getEntityId());
@@ -135,7 +131,7 @@ public class Replay {
                     connection.sendPacket(velocityPacket);
                 }
                 connection.sendPacket(metadataPacket);
-                if (frames.get(frames.indexOf(frame) == 0 ? 0 : frames.indexOf(frame) - 1).getLocation().distance(location) > 1.5 && frame.getLocation().getBlock().getType() != Material.AIR) {
+                if (frames.get(frames.indexOf(frame) == 0 ? 0 : frames.indexOf(frame) - 1).getLocation().distance(location) > 1 && frame.getLocation().add(0, -1, 0).getBlock().getType() != Material.AIR) {
                     connection.sendPacket(soundPacket);
                 }
                 connection.sendPacket(movementPacket);
@@ -146,6 +142,7 @@ public class Replay {
                 connection.sendPacket(chestplateEquipmentPacket);
                 connection.sendPacket(leggingsEquipmentPacket);
                 connection.sendPacket(bootsEquipmentPacket);
+
                 int currentIndex = frames.indexOf(frame);
                 int finalIndex = frames.size() - 1;
                 if (currentIndex == finalIndex) {

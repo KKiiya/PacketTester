@@ -1,22 +1,17 @@
 package me.kiiya.packettester.replays;
 
 import me.kiiya.packettester.PacketTester;
-import net.minecraft.server.v1_8_R3.DataWatcher;
 import net.minecraft.server.v1_8_R3.EntityItem;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R3.CraftServer;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftItem;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import javax.annotation.Nonnull;
-
 public class Frame {
     private final Location location;
-    private DataWatcher dataWatcher;
     private Location blockLocation;
     private ItemStack itemInHand;
     private Item dropItem;
@@ -29,10 +24,10 @@ public class Frame {
     private boolean isPlacing;
     private boolean isDamaged;
     private boolean isBlocking;
+    private boolean isSneaking;
 
     public Frame(Player player) {
         this.location = player.getLocation();
-        this.dataWatcher = ((CraftPlayer) player).getHandle().getDataWatcher();
         this.blockLocation = null;
         this.helmet = player.getInventory().getHelmet();
         this.chestplate = player.getInventory().getChestplate();
@@ -44,6 +39,7 @@ public class Frame {
         this.isHitting = false;
         this.isPlacing = false;
         this.isDamaged = false;
+        this.isSneaking = player.isSneaking();
         this.isBlocking = player.isBlocking();
     }
 
@@ -61,15 +57,6 @@ public class Frame {
 
     public ItemStack getItemInHand() {
         return itemInHand;
-    }
-
-    @Nonnull
-    public DataWatcher getDataWatcher() {
-        return dataWatcher;
-    }
-
-    public void setDataWatcher(@Nonnull DataWatcher dataWatcher) {
-        this.dataWatcher = dataWatcher;
     }
 
     public Item getPickupItem() {
@@ -142,6 +129,9 @@ public class Frame {
         return isBlocking;
     }
 
+    public boolean isSneaking() {
+        return isSneaking;
+    }
 
     public void setHitting(boolean hitting) {
         isHitting = hitting;
@@ -157,5 +147,9 @@ public class Frame {
 
     public void setBlocking(boolean blocking) {
         isBlocking = blocking;
+    }
+
+    public void setSneaking(boolean sneaking) {
+        isSneaking = sneaking;
     }
 }

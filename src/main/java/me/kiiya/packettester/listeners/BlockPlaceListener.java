@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -49,15 +50,13 @@ public class BlockPlaceListener implements Listener {
     }
 
     @EventHandler
-    public void onBlock(PlayerInteractEvent e) {
-        Player player = e.getPlayer();
-        if (e.getAction() != Action.LEFT_CLICK_AIR) return;
-
-        if (Replay.recordingPlayers.contains(player)) {
-            Frame frame = Replay.replays.get(player).getFrames().get(Replay.replays.get(player).getFrames().size() - 1);
-            frame.setItemInHand(player.getItemInHand());
-            frame.setPlacing(true);
-            frame.setBlockLocation(e.getClickedBlock().getLocation());
+    public void onDamage(EntityDamageEvent e) {
+        if (e.getEntity() instanceof Player) {
+            Player player = (Player) e.getEntity();
+            if (Replay.recordingPlayers.contains(player)) {
+                Frame frame = Replay.replays.get(player).getFrames().get(Replay.replays.get(player).getFrames().size() - 1);
+                frame.setDamaged(true);
+            }
         }
     }
 

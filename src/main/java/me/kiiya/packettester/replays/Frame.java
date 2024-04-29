@@ -1,11 +1,22 @@
 package me.kiiya.packettester.replays;
 
+import me.kiiya.packettester.PacketTester;
+import net.minecraft.server.v1_8_R3.DataWatcher;
+import net.minecraft.server.v1_8_R3.EntityItem;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_8_R3.CraftServer;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftItem;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import javax.annotation.Nonnull;
 
 public class Frame {
     private final Location location;
+    private DataWatcher dataWatcher;
     private Location blockLocation;
     private ItemStack itemInHand;
     private Item dropItem;
@@ -14,25 +25,26 @@ public class Frame {
     private ItemStack chestplate;
     private ItemStack leggings;
     private ItemStack boots;
-    private boolean isSneaking;
     private boolean isHitting;
     private boolean isPlacing;
+    private boolean isDamaged;
     private boolean isBlocking;
 
-    public Frame(Location location, ItemStack helmet, ItemStack chestplate, ItemStack leggings, ItemStack boots, ItemStack itemInHand, boolean isSneaking, boolean isHitting, boolean isPlacing, boolean isBlocking) {
-        this.location = location;
+    public Frame(Player player) {
+        this.location = player.getLocation();
+        this.dataWatcher = ((CraftPlayer) player).getHandle().getDataWatcher();
         this.blockLocation = null;
-        this.helmet = helmet;
-        this.chestplate = chestplate;
-        this.leggings = leggings;
-        this.boots = boots;
-        this.itemInHand = itemInHand;
+        this.helmet = player.getInventory().getHelmet();
+        this.chestplate = player.getInventory().getChestplate();
+        this.leggings = player.getInventory().getLeggings();
+        this.boots = player.getInventory().getBoots();
+        this.itemInHand = player.getItemInHand();
         this.pickupItem = null;
         this.dropItem = null;
-        this.isSneaking = isSneaking;
-        this.isHitting = isHitting;
-        this.isPlacing = isPlacing;
-        this.isBlocking = isBlocking;
+        this.isHitting = false;
+        this.isPlacing = false;
+        this.isDamaged = false;
+        this.isBlocking = player.isBlocking();
     }
 
     public Location getLocation() {
@@ -51,6 +63,15 @@ public class Frame {
         return itemInHand;
     }
 
+    @Nonnull
+    public DataWatcher getDataWatcher() {
+        return dataWatcher;
+    }
+
+    public void setDataWatcher(@Nonnull DataWatcher dataWatcher) {
+        this.dataWatcher = dataWatcher;
+    }
+
     public Item getPickupItem() {
         return pickupItem;
     }
@@ -60,7 +81,8 @@ public class Frame {
     }
 
     public void setPickupItem(Item pickupItem) {
-        this.pickupItem = pickupItem;
+        EntityItem entityItem = new EntityItem(((CraftItem) pickupItem).getHandle().getWorld(), pickupItem.getLocation().getX(), pickupItem.getLocation().getY(), pickupItem.getLocation().getZ(), CraftItemStack.asNMSCopy(pickupItem.getItemStack()));
+        this.pickupItem = new CraftItem(((CraftServer) PacketTester.getInstance().getServer()), entityItem);
     }
 
     public void setDropItem(Item dropItem) {
@@ -103,9 +125,6 @@ public class Frame {
         this.itemInHand = itemInHand;
     }
 
-    public boolean isSneaking() {
-        return isSneaking;
-    }
 
     public boolean isHitting() {
         return isHitting;
@@ -115,9 +134,14 @@ public class Frame {
         return isPlacing;
     }
 
+    public boolean isDamaged() {
+        return isDamaged;
+    }
+
     public boolean isBlocking() {
         return isBlocking;
     }
+
 
     public void setHitting(boolean hitting) {
         isHitting = hitting;
@@ -127,8 +151,8 @@ public class Frame {
         isPlacing = placing;
     }
 
-    public void setSneaking(boolean sneaking) {
-        isSneaking = sneaking;
+    public void setDamaged(boolean damaged) {
+        isDamaged = damaged;
     }
 
     public void setBlocking(boolean blocking) {

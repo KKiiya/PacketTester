@@ -73,7 +73,8 @@ public class Frame {
     }
 
     public void setDropItem(Item dropItem) {
-        this.dropItem = dropItem;
+        EntityItem entityItem = new EntityItem(((CraftItem) dropItem).getHandle().getWorld(), dropItem.getLocation().getX(), dropItem.getLocation().getY(), dropItem.getLocation().getZ(), CraftItemStack.asNMSCopy(dropItem.getItemStack()));
+        this.dropItem = new CraftItem(((CraftServer) PacketTester.getInstance().getServer()), entityItem);
     }
 
     public ItemStack getHelmet() {

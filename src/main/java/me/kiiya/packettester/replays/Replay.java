@@ -49,8 +49,10 @@ public class Replay {
                 Location location = frame.getLocation();
                 npc.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
                 npc.setSneaking(frame.isSneaking());
-                if (frame.isBlocking()) npc.getDataWatcher().watch(8, (byte) 0x01);
-                else npc.getDataWatcher().watch(8, (byte) 0x00);
+                if (frame.isBlocking()) {
+                    npc.getDataWatcher().watch(8, (byte) 0x01);
+                    npc.getDataWatcher().watch(8, (byte) 0x02);
+                }
                 PacketPlayOutEntityTeleport movementPacket = new PacketPlayOutEntityTeleport(npc);
                 PacketPlayOutEntityHeadRotation headRotation = new PacketPlayOutEntityHeadRotation(npc, (byte) ((location.getYaw() * 256.0F) / 360.0F));
                 PacketPlayOutEntity.PacketPlayOutEntityLook packetPlayOutEntityLook = new PacketPlayOutEntity.PacketPlayOutEntityLook(npc.getId(), (byte) ((location.getYaw() * 256.0F) / 360.0F), (byte) ((location.getPitch() * 256.0F) / 360.0F), true);
@@ -60,7 +62,7 @@ public class Replay {
                 PacketPlayOutEntityEquipment leggingsEquipmentPacket = new PacketPlayOutEntityEquipment(npc.getId(), 2, CraftItemStack.asNMSCopy(frame.getLeggings() == null ? new ItemStack(Material.AIR) : frame.getLeggings()));
                 PacketPlayOutEntityEquipment bootsEquipmentPacket = new PacketPlayOutEntityEquipment(npc.getId(), 1, CraftItemStack.asNMSCopy(frame.getBoots() == null ? new ItemStack(Material.AIR) : frame.getBoots()));
                 PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(npc.getId(), npc.getDataWatcher(), true);
-                PacketPlayOutNamedSoundEffect soundPacket = new PacketPlayOutNamedSoundEffect(getSounds(location.getBlock()).getStepSound(), location.getX(), location.getY(), location.getZ(), getSounds(location.getBlock()).getVolume2(), getSounds(location.getBlock()).getVolume1());
+                PacketPlayOutNamedSoundEffect soundPacket = new PacketPlayOutNamedSoundEffect(getMaterialBlockSounds(location.clone().subtract(0, 1, 0).getBlock().getType()).getStepSound(), location.getX(), location.getY(), location.getZ(), getMaterialBlockSounds(location.clone().subtract(0, 1, 0).getBlock().getType()).getVolume1(), getMaterialBlockSounds(location.clone().subtract(0, 1, 0).getBlock().getType()).getVolume2());
 
                 if (frame.isHitting()) {
                     PacketPlayOutAnimation animationPacket = new PacketPlayOutAnimation(npc, 0);
@@ -77,7 +79,7 @@ public class Replay {
                             EntityItem entityItem = new EntityItem(world, blockPosition.getX(), blockPosition.getY(), blockPosition.getZ(), CraftItemStack.asNMSCopy(drop));
                             CraftItem craftItem = new CraftItem(((CraftServer) PacketTester.getInstance().getServer()), entityItem);
                             craftItem.setPickupDelay(0);
-                            craftItem.setVelocity(new Vector(0.1, 0.2, 0.1));
+                            craftItem.setVelocity(new Vector(0, 0.2, 0));
                             PacketPlayOutSpawnEntity spawnEntity = new PacketPlayOutSpawnEntity(entityItem, 2);
                             PacketPlayOutEntityMetadata entityMetadata = new PacketPlayOutEntityMetadata(entityItem.getId(), entityItem.getDataWatcher(), true);
                             PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(entityItem);
@@ -85,7 +87,7 @@ public class Replay {
                             connection.sendPacket(entityMetadata);
                             connection.sendPacket(velocityPacket);
                         }
-                        PacketPlayOutNamedSoundEffect breakSoundPacket = new PacketPlayOutNamedSoundEffect(getSounds(finalBlock).getBreakSound(), location.getX(), location.getY(), location.getZ(), getSounds(finalBlock).getVolume2(), getSounds(finalBlock).getVolume1());
+                        PacketPlayOutNamedSoundEffect breakSoundPacket = new PacketPlayOutNamedSoundEffect(getMaterialBlockSounds(finalBlock.getType()).getBreakSound(), location.getX(), location.getY(), location.getZ(), getMaterialBlockSounds(finalBlock.getType()).getVolume1(), getMaterialBlockSounds(finalBlock.getType()).getVolume2());
                         PacketPlayOutBlockChange blockChangePacket = new PacketPlayOutBlockChange(world, blockPosition);
                         connection.sendPacket(blockChangePacket);
                         connection.sendPacket(breakSoundPacket);
@@ -98,8 +100,7 @@ public class Replay {
                         block.setType(frame.getItemInHand().getType());
                         block.setData(frame.getItemInHand().getData().getData());
                     });
-                    Block finalBlock = location.getWorld().getBlockAt(frame.getBlockLocation());
-                    PacketPlayOutNamedSoundEffect placeSoundPacket = new PacketPlayOutNamedSoundEffect(getSounds(finalBlock).getBreakSound(), location.getX(), location.getY(), location.getZ(), getSounds(finalBlock).getVolume2(), getSounds(finalBlock).getVolume1());
+                    PacketPlayOutNamedSoundEffect placeSoundPacket = new PacketPlayOutNamedSoundEffect(getMaterialBlockSounds(frame.getItemInHand().getType()).getBreakSound(), location.getX(), location.getY(), location.getZ(), getMaterialBlockSounds(frame.getItemInHand().getType()).getVolume1(), getMaterialBlockSounds(frame.getItemInHand().getType()).getVolume2());
                     PacketPlayOutAnimation animationPacket = new PacketPlayOutAnimation(npc, 0);
                     PacketPlayOutBlockChange blockChangePacket = new PacketPlayOutBlockChange(((CraftWorld) frame.getBlockLocation().getWorld()).getHandle(), new BlockPosition(frame.getBlockLocation().getBlockX(), frame.getBlockLocation().getBlockY(), frame.getBlockLocation().getBlockZ()));
                     connection.sendPacket(animationPacket);
@@ -161,7 +162,7 @@ public class Replay {
     public void startRecording() {
         replays.put(player, this);
         recordingPlayers.add(player);
-        recordingTaskId = Bukkit.getScheduler().runTaskTimerAsynchronously(PacketTester.getInstance(), () -> {
+        recordingTaskId = Bukkit.getScheduler().runTaskTimer(PacketTester.getInstance(), () -> {
             frames.add(new Frame(player));
         }, 0, 1).getTaskId();
     }
@@ -171,8 +172,7 @@ public class Replay {
         Bukkit.getScheduler().cancelTask(recordingTaskId);
     }
 
-    public static net.minecraft.server.v1_8_R3.Block.StepSound getSounds(Block block) {
-        net.minecraft.server.v1_8_R3.Block nmsBlock = CraftMagicNumbers.getBlock(block);
-        return nmsBlock.stepSound;
+    public static net.minecraft.server.v1_8_R3.Block.StepSound getMaterialBlockSounds(Material material) {
+        return CraftMagicNumbers.getBlock(material).stepSound;
     }
 }
